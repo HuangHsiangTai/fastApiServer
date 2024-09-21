@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from sqlalchemy.orm import Session
 import os
 from pydantic import BaseModel
@@ -8,8 +8,7 @@ mysql_user = os.getenv("MYSQL_USER")
 from .crud.create_user import create_user as createU
 from .crud.get_user import get_users as getU
 from .utils.mysql import  Base, engine,SessionLocal
-from .utils.logger import LoggingMiddleware
-
+from .utils.logger import LoggingMiddleware, log_info
 
 
 
@@ -31,14 +30,14 @@ def get_db():
 class UserCreate(BaseModel):
     name: str
     email: str
-
 @app.get("/")
 def read_root():
     return {"message": "Hello, FastAPI + SQLAlchemy + MySQL"}
 
 # 添加一个简单的用户创建 API
 @app.post("/users/")
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(user: UserCreate, request:Request, db: Session = Depends(get_db)):  
+    log_info('create new user',extra={"user":user,"request_id":request.state.request_id})
     return createU(db=db, name=user.name, email=user.email)
 
 # 查询所有用户

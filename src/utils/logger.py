@@ -2,7 +2,7 @@ import time
 import logging
 import json
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from .uuid import generate_uuid
 from typing import TypedDict,Optional
@@ -60,6 +60,14 @@ def log_info(message:Optional[str]=None, extra:Optional[ExtraDict]= None):
         logging.info('',extra=extra)
     else:
         logging.info(f"{message}", extra=extra)
+def log_error(message:Optional[str]=None, extra:Optional[ExtraDict]= None):
+    if extra:
+        # 遍历和格式化 extra 中的所有嵌套字段
+        extra = format_nested_json(extra)
+    if(message is None):
+        logging.error('',extra=extra)
+    else:
+        logging.error(f"{message}", extra=extra)        
     
 # 自定义中间件
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -70,21 +78,27 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         # 记录请求信息
         request_body = await request.body()
         request.state.request_id = request_id
-        log_info(f"Request: {request.method} {request.url}",extra={'request_id':request_id} )
+        # log_info(f"Request: {request.method} {request.url}",extra={'request_id':request_id} )
         body =json.loads(request_body.decode('utf-8')) if request_body else None
-        log_info('requestBody',extra={'body': body, 'request_id':request_id})
+        log_info('Request',extra={'body': body, 'request_id':request_id, 'method':request.method, 'path':request.url.path})
         # 调用下一个处理程序（处理请求）
         response = await call_next(request)
 
         # 记录响应信息
         process_time = time.time() - start_time
-        log_info("Response status: {response.status_code}", {"request_id":request_id})
         #  log_info(f"Response Headers: {response.headers}", request_id)
         response_body = [section async for section in response.body_iterator]
         body =b''.join(response_body).decode('utf-8')
-        log_info('Response',{'body':json.loads(body), 'request_id':request_id})
-        
-        # 重新构造响应，因为 body 只能读取一次
-        response = JSONResponse(content=body, status_code=response.status_code)
-        log_info("Process time: {process_time:.2f}s", {"request_id": request_id})
+        try:
+            # 檢查是否為有效的 JSON
+            json_body = json.loads(body)
+            log_info('Response Json', {'body': json_body, 'request_id': request_id,'status':response.status_code, "process_time":f"{process_time:.2f}"})
+            # 因為body只能讀一次,重新建立JSONResponse
+            response = JSONResponse(content=json_body, status_code=response.status_code, headers=dict(response.headers))
+        except json.JSONDecodeError:
+            log_error('Response is not a valid JSON format', {'body': body, 'request_id': request_id})
+            # 因為body只能讀一次,重新建立JSONResponse
+            response = Response(content=body, status_code=response.status_code, headers=dict(response.headers))
+        except Exception as e:
+            log_error(f"Response json loads failed with error: {e}")   
         return response

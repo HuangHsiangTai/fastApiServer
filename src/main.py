@@ -5,10 +5,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 load_dotenv()
 mysql_user = os.getenv("MYSQL_USER")
-from .crud.create_user import create_user as createU
-from .crud.get_user import get_users as getU
-from .utils.mysql import  Base, engine,SessionLocal
-from .utils.logger import LoggingMiddleware, log_info
+from crud.create_user import create_user as createU
+from crud.get_user import get_users as getU
+from utils.mysql import  Base, engine,SessionLocal
+from utils.logger import LoggingMiddleware, log_info
 
 
 

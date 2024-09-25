@@ -86,7 +86,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
         # 记录响应信息
         process_time = time.time() - start_time
-        #  log_info(f"Response Headers: {response.headers}", request_id)
         response_body = [section async for section in response.body_iterator]
         body =b''.join(response_body).decode('utf-8')
         try:
@@ -97,7 +96,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             response = JSONResponse(content=json_body, status_code=response.status_code, headers=dict(response.headers))
         except json.JSONDecodeError:
             log_error('Response is not a valid JSON format', {'body': body, 'request_id': request_id})
-            # 因為body只能讀一次,重新建立JSONResponse
+            # 因為body只能讀一次,重新建立Response
             response = Response(content=body, status_code=response.status_code, headers=dict(response.headers))
         except Exception as e:
             log_error(f"Response json loads failed with error: {e}")   

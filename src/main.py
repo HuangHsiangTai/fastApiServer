@@ -7,7 +7,7 @@ load_dotenv()
 mysql_user = os.getenv("MYSQL_USER")
 from crud.create_user import create_user as createU
 from crud.get_user import get_users as getU
-from utils.mysql import  Base, engine,SessionLocal
+from config.mysql import  Base, engine, MySqlClient
 from utils.logger import LoggingMiddleware, log_info
 
 
@@ -20,11 +20,8 @@ app = FastAPI()
 app.add_middleware(LoggingMiddleware)
 # 依赖项，用于获取数据库会话
 def get_db():
-    db = SessionLocal()
-    try:
+   with MySqlClient() as db:
         yield db
-    finally:
-        db.close()
 
 
 class UserCreate(BaseModel):

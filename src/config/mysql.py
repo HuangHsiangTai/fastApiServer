@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
-
 # get environmental varialbe
 DB_USER = os.getenv("MYSQL_USER")
 DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
@@ -26,3 +25,7 @@ class MySqlClient:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.db.close()
+# get db
+def get_db():
+   with MySqlClient() as db:
+        yield db

@@ -1,5 +1,5 @@
 # command
-- uvicorn main:app --reload --app-dir src
+- uvicorn src.main:app --reload
 # Requirement
 - install 
     - fastapi

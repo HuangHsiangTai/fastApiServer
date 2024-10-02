@@ -1,22 +1,23 @@
 from fastapi import FastAPI
-import src.config.setting
-from src.config.mysql import  Base, engine
 from src.utils.logger import LoggingMiddleware, log_info
+from src.config.container import ApplicationContainer
 from src.utils.router import RouterModule
-from src.api import users
+from src.api import users, internal
 
 
-# create table
-Base.metadata.create_all(bind=engine)
+def create_app()-> FastAPI:
+    app = FastAPI()
+    app.add_middleware(LoggingMiddleware)
+    app_container = ApplicationContainer()
+    # Configure the FastAPI app to use the container
+    app.container = app_container
+    modules = [users,internal]
+    for module in modules:
+        assert isinstance(module, RouterModule), f"Module {module} must have a 'router' attribute"
+        app.include_router(module.router)
+    return app    
 
-app = FastAPI()
-app.add_middleware(LoggingMiddleware)
-
-modules = [users]
-for module in modules:
-    assert isinstance(module, RouterModule), f"Module {module} must have a 'router' attribute"
-    app.include_router(module.router)
-
+app = create_app()
 @app.get("/")
 def read_root():
     return {"message": "Hello, FastAPI + SQLAlchemy + MySQL"}

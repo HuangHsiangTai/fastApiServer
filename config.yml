@@ -1,0 +1,6 @@
+mysql:
+  root_password: "123456"
+  user: "ShawnHuang"
+  password: "Abc56789"
+  database: "fastApiDb1"
+  host: "127.0.0.1"

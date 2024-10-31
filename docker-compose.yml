@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:17.0
+    container_name: my_postgres1
+    environment:
+      POSTGRES_USER: ShawnHuang
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: fastApiDb1
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pg-network  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    networks:
+      - pg-network      
+volumes:
+  postgres_data:  
+networks:
+  pg-network:
+    driver: bridge      

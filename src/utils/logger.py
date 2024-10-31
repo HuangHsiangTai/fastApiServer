@@ -5,7 +5,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from .uuid import generate_uuid
-from typing import TypedDict,Optional
+from typing import TypedDict,Optional, Dict, Any,List, Mapping
 
 from pythonjsonlogger import jsonlogger
 
@@ -29,7 +29,7 @@ logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)
 logger.setLevel(logging.INFO)
 
-def format_nested_json(data):
+def format_nested_json(data:Mapping[str,Any]|List[Any]):
     if hasattr(data, "__dict__"):  # 如果是类实例，提取属性字典
         data = vars(data)
 
@@ -49,18 +49,17 @@ def format_nested_json(data):
             return data
     else:
         return data
-class ExtraDict(TypedDict, total=False):
-    request_id:Optional[str]
 
-def log_info(message:Optional[str]=None, extra:Optional[ExtraDict]= None):
-    if extra:
+def log_info(message:Optional[str]=None, extra:Optional[Mapping[str,Any]]= None):
+    nested_json=None
+    if extra is not None:
         # 遍历和格式化 extra 中的所有嵌套字段
-        extra = format_nested_json(extra)
+        nested_json = format_nested_json(extra)
     if(message is None):
-        logging.info('',extra=extra)
+        logging.info('',extra=nested_json)
     else:
-        logging.info(f"{message}", extra=extra)
-def log_error(message:Optional[str]=None, extra:Optional[ExtraDict]= None):
+        logging.info(f"{message}", extra=nested_json)
+def log_error(message:Optional[str]=None, extra:Optional[Dict[str,Any]]= None):
     if extra:
         # 遍历和格式化 extra 中的所有嵌套字段
         extra = format_nested_json(extra)

@@ -10,7 +10,7 @@ def create_app()-> FastAPI:
     app.add_middleware(LoggingMiddleware)
     app_container = ApplicationContainer()
     # Configure the FastAPI app to use the container
-    app.container = app_container
+    app.container = app_container 
     modules = [users,internal]
     for module in modules:
         assert isinstance(module, RouterModule), f"Module {module} must have a 'router' attribute"

@@ -7,7 +7,7 @@
 - [ ] todo1
 - [X] todo2
 
-```
+```mermaid
 sequenceDiagram
   autonumber
   participant core3 as vehicle
